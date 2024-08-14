@@ -7,13 +7,20 @@ import { comparePassword, hashPassword } from "../../helpers/hashPassword";
 
 import responseHandler from "../../handlers/response.handler";
 import { log } from "console";
+import { validationResult } from "express-validator";
+import { validateBody } from "../../handlers/validation.handler";
 
 export const login = async (req: Request, res: Response) => {
     try {
+        const validateResult = validateBody(req);
+        if (validateResult.length > 0)
+            return responseHandler.badRequest(res, validateResult);
+
         const { email, password } = req.body as {
             email: string;
             password: string;
         };
+
         const user = await User.findOne({
             email: email,
         });
@@ -32,7 +39,7 @@ export const login = async (req: Request, res: Response) => {
             "Đăng nhập thành công"
         );
     } catch (error: any) {
-        log(error)
+        log(error);
         responseHandler.error(res, error);
     }
 };
