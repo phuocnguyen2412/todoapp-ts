@@ -1,10 +1,10 @@
 import { Request } from "express";
-import { validationResult } from "express-validator";
+import { Result, ValidationError, validationResult } from "express-validator";
 
 export const validateBody = (req: Request): string => {
-    const errors = validationResult(req);
+    const errors: Result<ValidationError> = validationResult(req);
     if (!errors.isEmpty()) {
-        const errorMessages = errors
+        const errorMessages: string = errors
             .array()
             .map((error) => `${error.msg}`)
             .join("; ");
