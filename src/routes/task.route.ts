@@ -1,9 +1,12 @@
-import express from "express"
+import { Router } from "express";
+import { addTask } from "../controllers/auth/task.controller";
+import { validateTask } from "../validations/task.validation";
 import { getAllTask } from "../controllers/task/Task.controller"
 
 
-const task_route = express.Router()
+const taskRoute : Router = Router();
 
-task_route.get("getAllTask",getAllTask)
+taskRoute.post("/add-task", validateTask , addTask );
+taskRoute.get("getAllTask",getAllTask)
 
-export default task_route 
+export default taskRoute
