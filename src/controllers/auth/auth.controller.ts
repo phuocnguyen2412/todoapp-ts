@@ -15,7 +15,7 @@ export const login = async (req: Request, res: Response) => {
         const validateResult: string = validateBody(req);
         if (validateResult.length > 0)
             return responseHandler.badRequest(res, validateResult);
-
+        
         const { email, password } = req.body as {
             email: string;
             password: string;
