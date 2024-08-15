@@ -1,9 +1,9 @@
-import express from "express"
-import { getAllTask } from "../controllers/task/Task.controller"
+import express, { Router } from "express"
+import { getAllTask } from "../controllers/task/task.controller"
 
 
-const task_route = express.Router()
+const task_route: Router = express.Router()
 
-task_route.get("getAllTask",getAllTask)
+task_route.get("/getAllTask",getAllTask)
 
 export default task_route 
