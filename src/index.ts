@@ -6,7 +6,7 @@ import { createServer, Server } from "http";
 import corsOptions from "./configs/cors.config";
 import cors from "cors";
 import envServer from "./env";
-import task_route from "./routes/task.route";
+
 
 
 const app: Express = express();
@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // API routes
 app.use("/api/v1", routes);
-app.use("/api/task", task_route)
+
 // Create HTTP server
 const httpServer: Server = createServer(app);
 
