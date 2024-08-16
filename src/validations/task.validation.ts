@@ -1,3 +1,5 @@
+import { Request, Response, NextFunction } from 'express';
+import responseHandler from "./../handlers/response.handler";
 import { body } from "express-validator";
 
 
@@ -24,3 +26,21 @@ export const validateEditTask = [
                 .notEmpty()
                 .withMessage("time bị để trống")
 ]; 
+
+export const handleValidateTask = async( req: Request, res: Response, next: NextFunction ) => {
+    const { title, description } = req.body as {
+        title : string,
+        description : string 
+    }
+    
+    if ( title.trim().length === 0 ) {
+        return responseHandler.badRequest( res, "title không được chứa khoảng trắng");
+    } 
+
+    if ( description.trim().length === 0 ) {
+        return responseHandler.badRequest( res, "description không được chứa khoảng trắng");
+    } 
+
+    next();
+
+}
