@@ -90,11 +90,11 @@ export const editTask = async (req: Request, res: Response) => {
             return responseHandler.notFound(res, "Invalid Id");
         }
 
-        console.log(taskId, oldTask, newTask);
+        return responseHandler.ok( res, newTask, "Edit Success" )
 
-        return responseHandler.ok(res, newTask, "Edit Success");
-    } catch (error: any) {
-        return responseHandler.error(res, error);
+
+    } catch ( error : any ) {
+        return responseHandler.error( res, error );
     }
 };
 
@@ -203,6 +203,55 @@ export const getTaskByOptions2 = async (req: Request, res: Response) => {
         responseHandler.error(res, error);
     }
 };
+
+
+export const removeUserFromTask = async( req: Request, res: Response ) => {
+        const { userId, taskId } = req.body as {
+            userId : Types.ObjectId,
+            taskId : Types.ObjectId
+        }
+    try {
+        const user = await getUserById( userId );
+        if ( !user ) {
+            return responseHandler.notFound( res, "User not Found" );
+        }
+
+        const task = await Task.findById( { _id : taskId } ).exec();
+        if ( !task ) {
+            return responseHandler.notFound( res, "Invalid id" );
+        }
+        if ( task.status == "done" ) {
+            return responseHandler.notFound( res, "Task has done already" );
+        }
+        if ( task.isDeleted == true ) {
+            return responseHandler.notFound( res, "Task deleted" );
+        } 
+
+        const isExistUser = task.users.some( ( element ) => {
+            if ( element.toString() === userId.toString() ) {
+                return true;
+            }
+        })
+        if ( !isExistUser ) {
+            return responseHandler.notFound( res, "user not found in task")
+        }
+        const index = task.users.findIndex( ( element ) => {
+            if ( element.toString() === userId.toString() ) {
+                return true;
+            }
+        } )
+        task.users.splice( index, 1 );
+        await task.save();
+
+
+        return responseHandler.ok( res, task, "Remove user success" );
+
+    } catch ( error : any ) {
+        return responseHandler.error( res, error );
+    }
+}
+
+
 export const addUserToTask = async (req: Request, res: Response) => {
     const { userId, taskId } = req.body as {
         userId: Types.ObjectId;
@@ -232,6 +281,7 @@ export const addUserToTask = async (req: Request, res: Response) => {
         responseHandler.error(res, error);
     }
 };
+
 export const addUserToTask2 = async (req: Request, res: Response) => {
     const { userId, taskId } = req.body as {
         userId: Types.ObjectId;

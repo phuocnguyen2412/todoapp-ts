@@ -27,6 +27,19 @@ export const validateEditTask = [
                 .withMessage("time bị để trống")
 ]; 
 
+export const validateUserIdAndTaskId = [
+    body("userId")
+                .isMongoId()
+                .withMessage("Userid phai la ObjectId")
+                .notEmpty()
+                .withMessage("UserId không được để trống"),
+    body("taskId")
+                .isMongoId()
+                .withMessage("Userid phai la ObjectId")
+                .notEmpty()
+                .withMessage("taskId không được để trống")
+]
+
 export const handleValidateTask = async( req: Request, res: Response, next: NextFunction ) => {
     const { title, description } = req.body as {
         title : string,
