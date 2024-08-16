@@ -1,4 +1,4 @@
-const day : Array<string> = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ]
+
 const milisUtcToVnTime : number = 7 * 3600 * 1000;
 const milisInOneDay : number = 24 * 3600 * 1000;
 

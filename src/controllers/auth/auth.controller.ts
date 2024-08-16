@@ -56,7 +56,7 @@ export const register = async (req: Request, res: Response) => {
             email,
             name,
             account: {
-                password: hashPassword(password),
+                password: await hashPassword(password),
             },
         });
 
