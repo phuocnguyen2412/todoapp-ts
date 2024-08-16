@@ -5,7 +5,8 @@ import User from "../../models/user.model";
 import { validateBody } from "../../handlers/validation.handler";
 import { Types } from "mongoose";
 import { title } from "process";
-
+import { getUserById } from "../user/user.controller";
+import { error } from "console";
 
 export const addTask = async( req: Request, res: Response ) => {
     try {
@@ -37,8 +38,6 @@ export const addTask = async( req: Request, res: Response ) => {
         return responseHandler.error( res, error );
     }
 }
-
-
 
 export const getAllTask = async(req:Request,res:Response)=>{
     try{
@@ -108,4 +107,40 @@ export const getTaskByOptions= async (req:Request,res:Response)=>{
 
     
 
+}
+
+
+export const addUserToTask = async (req: Request,res:Response)=>{
+    const {userId,taskId} = req.body as {
+        userId: Types.ObjectId;
+        taskId: Types.ObjectId;
+    }
+    try {
+        const user = await getUserById(userId)
+       
+        if(!user)
+        {
+            responseHandler.notFound(res,"User not Found")
+        }
+        
+        const task = Task.findById(taskId)
+        .then((data:any)=>{
+                console.log(data)
+                data.users.push(userId)
+                return data.save()
+                
+        })
+        .then(docUpdate=>{
+            responseHandler.ok(res,{docUpdate},"Add user success")
+        })
+        .catch((err)=>{
+            responseHandler.notFound(res,"Task not found")
+        })
+
+        
+       
+        
+    } catch (error: any) {
+            responseHandler.error(res,error)
+    }
 }
