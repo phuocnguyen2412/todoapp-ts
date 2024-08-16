@@ -55,10 +55,16 @@ export const editTask = async( req: Request, res: Response ) => {
             return responseHandler.notFound( res, "Invalid Id" )
         }
 
-        const oldTask = await Task.findById( taskId ).exec();
-        if ( !oldTask ) {
-            return responseHandler.notFound( res, "Task not found" )
-        }
+        const oldTask = await Task.findById({ _id : taskId })
+            if ( !oldTask ) {
+                return responseHandler.notFound( res, "Invalid Id" );
+            }
+            if ( oldTask.status == "done" ) {
+                return responseHandler.notFound( res, "Task has done already" );
+            }
+            if ( oldTask.isDeleted == true ) {
+                return responseHandler.notFound( res, "Task deleted" );
+            }
 
         const { title = oldTask.title, description = oldTask.description, users = oldTask.users, time = oldTask.time } = req.body as { 
             title? : string,
