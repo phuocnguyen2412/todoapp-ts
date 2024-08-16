@@ -1,3 +1,4 @@
+import { badRequest } from './../../handlers/response.handler';
 import { getNextDate } from './../../helpers/getDate';
 import { Request, Response } from "express"
 import Task from "../../models/task.model"
@@ -37,6 +38,54 @@ export const addTask = async( req: Request, res: Response ) => {
 
         return responseHandler.created( res, newTask, "Created" )
     } catch (error : any ) {
+        return responseHandler.error( res, error );
+    }
+}
+
+export const editTask = async( req: Request, res: Response ) => {
+    try {
+
+        const validateEditTaskResult: string = validateBody(req);
+        if ( validateEditTaskResult.length > 0 ) {
+            return responseHandler.badRequest( res, validateEditTaskResult )
+        }
+
+        const taskId = req.params.id;
+        if ( !Types.ObjectId.isValid( taskId) ) {
+            return responseHandler.notFound( res, "Invalid Id" )
+        }
+
+        const oldTask = await Task.findById( taskId ).exec();
+        if ( !oldTask ) {
+            return responseHandler.notFound( res, "Task not found" )
+        }
+
+        const { title = oldTask.title, description = oldTask.description, users = oldTask.users, time = oldTask.time } = req.body as { 
+            title? : string,
+            description? : string,
+            users? : Types.ObjectId[],
+            time? : Date
+        }
+
+        await Task.updateOne({
+            _id : taskId, 
+            title : title,
+            description : description,
+            users : users,
+            time : time
+        })
+
+        const newTask = await Task.findById( taskId ).exec();
+        if( !newTask ) {
+            return responseHandler.notFound( res, "Invalid Id" );
+        }
+        
+        console.log( taskId, oldTask, newTask );
+
+        return responseHandler.ok( res, newTask, "Edit Success" )
+
+
+    } catch ( error : any ) {
         return responseHandler.error( res, error );
     }
 }
