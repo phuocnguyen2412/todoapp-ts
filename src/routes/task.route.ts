@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateTask } from "../validations/task.validation";
-import { addTask, addUserToTask, getAllTask, getTaskByOptions, removeTask } from "../controllers/task/Task.controller";
+import { addTask, addUserToTask, getAllTask, getTaskByOptions, removeTask } from "../controllers/task/task.controller";
 
 
 
