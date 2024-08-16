@@ -21,7 +21,7 @@ export const addTask = async( req: Request, res: Response ) => {
             title: string,
             description: string,
             users?: Types.ObjectId[],
-            time : Date | string
+            time : Date
         }
 
         const newTask = new Task({     
