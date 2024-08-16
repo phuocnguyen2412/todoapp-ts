@@ -88,7 +88,7 @@ export const getTaskByOptions= async (req:Request,res:Response)=>{
     }
     if(title!=null)
     {
-        filter.title = title
+        filter.title = new RegExp(title, 'i')
     }
     if(status!=null)
     {
@@ -98,7 +98,7 @@ export const getTaskByOptions= async (req:Request,res:Response)=>{
 
     try {
 
-        const tasks = await Task.find(filter).limit(taskOption.limit).sort( { time : taskOption.sort } ).skip(taskOption.offset)
+        const tasks = await Task.find(filter).limit(taskOption.limit).sort( { time : taskOption.sort } ).skip(taskOption.offset).select('-id -isDelected')
 
         responseHandler.ok(res,tasks,"find sucess")
     
