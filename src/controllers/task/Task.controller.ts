@@ -1,3 +1,4 @@
+import { getNextDate } from './../../helpers/getDate';
 import { Request, Response } from "express"
 import Task from "../../models/task.model"
 import responseHandler from "../../handlers/response.handler"
@@ -16,11 +17,11 @@ export const addTask = async( req: Request, res: Response ) => {
             return responseHandler.badRequest( res, validateTaskResult )
         }
         
-        const { title, description, users = [], time = new Date() } = req.body as {
+        const { title, description, users = [], time = getNextDate() } = req.body as {
             title: string,
             description: string,
             users?: Types.ObjectId[],
-            time : Date
+            time : Date | string
         }
 
         const newTask = new Task({     
