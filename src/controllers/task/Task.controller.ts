@@ -7,6 +7,7 @@ import { Types } from "mongoose";
 import { title } from "process";
 import { getUserById } from "../user/user.controller";
 import { error } from "console";
+import { truncate } from "fs/promises";
 
 export const addTask = async( req: Request, res: Response ) => {
     try {
@@ -41,7 +42,7 @@ export const addTask = async( req: Request, res: Response ) => {
 
 export const getAllTask = async(req:Request,res:Response)=>{
     try{
-        const allTask = await Task.find()
+        const allTask = await Task.find({isDeleted:false})
         responseHandler.ok(res,allTask,"Get All Task Success",)
     }
     catch(err: any)
@@ -123,18 +124,18 @@ export const addUserToTask = async (req: Request,res:Response)=>{
             responseHandler.notFound(res,"User not Found")
         }
         
-        const task = Task.findById(taskId)
+        const task = Task.findOne({"_id": taskId, "isDeleted":false})
         .then((data:any)=>{
                 console.log(data)
                 data.users.push(userId)
-                return data.save()
-                
+                data.save()
+                return data
         })
         .then(docUpdate=>{
             responseHandler.ok(res,{docUpdate},"Add user success")
         })
-        .catch((err)=>{
-            responseHandler.notFound(res,"Task not found")
+        .catch((error: any)=>{
+            responseHandler.notFound(res,"Task not found: "+error)
         })
 
         
@@ -143,4 +144,22 @@ export const addUserToTask = async (req: Request,res:Response)=>{
     } catch (error: any) {
             responseHandler.error(res,error)
     }
+}
+
+export const removeTask = async (req:Request,res:Response) => {
+    const {taskId} = req.body as {
+        taskId: Types.ObjectId;
+    }
+     const task = Task.findOne({"_id":taskId,"isDeleted": false})
+    .then((doc: any)=>{
+        doc.isDeleted = true
+        doc.save()
+        return doc
+        })
+    .then((docremove:any)=>{
+        responseHandler.ok(res,docremove,"remove success")
+    })
+    .catch((error: any)=>{
+        responseHandler.notFound(res,"task not found: "+ error)
+    })
 }
