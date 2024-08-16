@@ -216,9 +216,9 @@ export const removeUserFromTask = async( req: Request, res: Response ) => {
             return responseHandler.notFound( res, "User not Found" );
         }
 
-        const task = await Task.findById( { _id : taskId } ).exec();
+        const task = await Task.findOne( { _id : taskId, isDeleted : false } );
         if ( !task ) {
-            return responseHandler.notFound( res, "Invalid id" );
+            return responseHandler.notFound( res, "Task not Found" );
         }
         if ( task.status == "done" ) {
             return responseHandler.notFound( res, "Task has done already" );
