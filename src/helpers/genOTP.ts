@@ -11,7 +11,7 @@ export const genOTP = () : number => {
 export const genOTPExpired = () : Date => {
     const now = getNextDate();
     const milisAtNow = now.getTime();
-    const milisAtExpired = ( 2 * milisInOneMinute ) + milisAtNow; 
+    const milisAtExpired = ( 3 * milisInOneMinute ) + milisAtNow; 
     const otpExpired = new Date( milisAtExpired );
 
     return otpExpired;
