@@ -53,16 +53,17 @@ export const editTask = async (req: Request, res: Response) => {
         if (!Types.ObjectId.isValid(taskId)) {
             return responseHandler.notFound(res, "Invalid Id");
         }
+        const isExistTask = await Task.findById( taskId );
+        if ( !isExistTask ) {
+            return responseHandler.notFound(res, "Task Id not Found");
+        } 
 
-        const oldTask = await Task.findById({ _id : taskId })
+        const oldTask = await Task.findOne({ _id : taskId, isDeleted : false })
             if ( !oldTask ) {
-                return responseHandler.notFound( res, "Invalid Id" );
+                return responseHandler.notFound( res, "Task not Found" );
             }
             if ( oldTask.status == "done" ) {
-                return responseHandler.notFound( res, "Task has done already" );
-            }
-            if ( oldTask.isDeleted == true ) {
-                return responseHandler.notFound( res, "Task deleted" );
+                return responseHandler.notFound( res, "Task has Done already" );
             }
 
         const {
@@ -85,9 +86,12 @@ export const editTask = async (req: Request, res: Response) => {
             time: time,
         });
 
-        const newTask = await Task.findById(taskId).exec();
+        const newTask = await Task.findOne({ _id: taskId, isDeleted : false });
         if (!newTask) {
-            return responseHandler.notFound(res, "Invalid Id");
+            return responseHandler.notFound(res, "Task not Found");
+        }
+        if ( newTask.status == "done" ) {
+            return responseHandler.notFound( res, "Task has Done already" );
         }
 
         return responseHandler.ok( res, newTask, "Edit Success" )
