@@ -1,25 +1,8 @@
+import { transportType, userDataBase, mailOptionType } from './constantType';
 import env from '../env';
 const Email = env.envEmail.EMAIL || "your-Email"
 const Password = env.envEmail.PASSWORD || "your-Password"
 
-type transportType = {
-    service : string,
-    auth : {
-        user : string,
-        pass : string
-    }
-}
-type mailOptionType = {
-    from : string,
-    to : string,
-    subject : string,
-    html : string
-}
-type userDataBase =  { 
-    email : string, 
-    name : string ,
-    otp : number
-} 
 export const transportation : transportType = {
     service : "gmail",
     auth : {
