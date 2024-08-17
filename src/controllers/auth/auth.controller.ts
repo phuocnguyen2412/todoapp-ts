@@ -75,7 +75,6 @@ export const register = async (req: Request, res: Response) => {
             },
             isValidated : false,
         });
-        await sendOtpEmail( userData );
 
         responseHandler.created(
             res,
@@ -84,6 +83,13 @@ export const register = async (req: Request, res: Response) => {
             },
             "Đăng ký thành công, hãy xác thực tài khoản"
         );
+
+        try {
+            await sendOtpEmail( userData );
+        } catch ( error : any ) {
+            responseHandler.error( res, error );
+        }
+        
     } catch (error: any) {
         responseHandler.error(res, error);
     }
