@@ -1,3 +1,4 @@
+import { userDataBase } from './../../constants/constantType';
 import { Request, Response } from "express";
 import User from "../../models/user.model";
 import { generateToken } from "../../helpers/jwtToken";
@@ -33,7 +34,7 @@ export const login = async (req: Request, res: Response) => {
             user.account.otp = otp
             user.account.otpExp = otpExp
             await user.save()
-            sendOtpEmail({email : user.email,name: user.name,otp,otpExp})
+            sendOtpEmail({email : user.email,name: user.name,otp })
             return res.status(401).json({acessToken: generateToken(user.id),_id:user.id ,message:"Please validate your account",status: 401 })
         }
         responseHandler.ok(
@@ -57,14 +58,25 @@ export const register = async (req: Request, res: Response) => {
             name: string;
         };
 
+        const otp = genOTP();
+        const otpExpired = genOTPExpired();
+        const userData : userDataBase = {
+            email,
+            name,
+            otp : otp.toString()
+        }
         const user = await User.create({
             email,
             name,
             account: {
                 password: await hashPassword(password),
             },
+            isValidated : false,
+            otp : otp.toString(),
+            otpExpired
         });
-
+        await sendOtpEmail( userData );
+        
         responseHandler.created(
             res,
             {

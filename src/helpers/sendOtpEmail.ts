@@ -4,8 +4,7 @@ import nodemailer from 'nodemailer'
 type userDataBase =  { 
     email : string, 
     name : string ,
-    otp : string,
-    otpExp: Date,
+    otp : string
 } 
 
 export const sendOtpEmail = async ( userData : userDataBase ) => {
