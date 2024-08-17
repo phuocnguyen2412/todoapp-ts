@@ -14,5 +14,5 @@ export type mailOptionType = {
 export type userDataBase =  { 
     email : string, 
     name : string ,
-    otp : number
+    otp : string
 } 

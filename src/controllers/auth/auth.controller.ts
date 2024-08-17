@@ -3,9 +3,10 @@ import User from "../../models/user.model";
 import { generateToken } from "../../helpers/jwtToken";
 import { comparePassword, hashPassword } from "../../helpers/hashPassword";
 import responseHandler from "../../handlers/response.handler";
-import { log } from "console";
+import { error, log } from "console";
 import { validateBody } from "../../handlers/validation.handler";
-import { sendEmail } from "../../helpers/sendEmail";
+import { genOTP, genOTPExpired } from "../../helpers/genOTP";
+import { sendOtpEmail } from "../../helpers/sendOtpEmail";
 
 export const login = async (req: Request, res: Response) => {
     try {
@@ -27,8 +28,13 @@ export const login = async (req: Request, res: Response) => {
         if ((await comparePassword(password, user.account.password)) === false)
             return responseHandler.notFound(res, "Wrong password!");
         if(user.isValidated==false){
-            sendEmail({email : user.email,name: user.name})
-            return res.status(401).json({acessToken: generateToken(user.id) ,message:"Please validate your account",status: 401 })
+            const otp = genOTP().toString()
+            const otpExp = genOTPExpired()
+            user.account.otp = otp
+            user.account.otpExp = otpExp
+            await user.save()
+            sendOtpEmail({email : user.email,name: user.name,otp,otpExp})
+            return res.status(401).json({acessToken: generateToken(user.id),_id:user.id ,message:"Please validate your account",status: 401 })
         }
         responseHandler.ok(
             res,

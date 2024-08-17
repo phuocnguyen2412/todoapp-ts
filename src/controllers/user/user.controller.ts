@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 import User from "../../models/user.model"
 import responseHandler from "../../handlers/response.handler";
 import {Request,Response} from "express"
-import { sendEmail } from "../../helpers/sendEmail";
+
 
 
 
@@ -25,7 +25,7 @@ export const  confirmOtp = async (req: Request,res: Response)=>{
         }
         if(user.account.otp==otpConfirm)
         {
-            await User.findByIdAndUpdate(userId,{$set: { 'account.otp': null}})
+            await User.findByIdAndUpdate(userId,{$set: { 'account.otp': null,"account.otpExp": null}})
             user.isValidated = true
             await user.save()
             return responseHandler.ok(res,{},"Otp is confirmed and account validated ")
