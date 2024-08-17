@@ -3,10 +3,11 @@ import { Types } from "mongoose";
 import responseHandler from "../../handlers/response.handler";
 import { validateBody } from "../../handlers/validation.handler";
 import Task from "../../models/task.model";
-import { getUserById } from "../user/user.controller";
+
 import { getNextDate } from "./../../helpers/getDate";
 import { getPagination, PaginationParams } from "../../helpers/pagination";
 import { count, error } from "console";
+import User from "../../models/user.model";
 
 export const addTask = async (req: Request, res: Response) => {
     try {
@@ -34,9 +35,7 @@ export const addTask = async (req: Request, res: Response) => {
             status: "todo",
             time,
         });
-
         await newTask.save();
-
         return responseHandler.created(res, newTask, "Created");
     } catch (error: any) {
         return responseHandler.error(res, error);
@@ -139,7 +138,6 @@ export const getTaskByOptions = async (req: Request, res: Response) => {
     if (status) {
         taskOption.status = status;
     }
-    console.log(taskOption)
     try {
         const tasks = await Task.find(taskOption)
             .populate('users','_id name')
@@ -161,7 +159,7 @@ export const removeUserFromTask = async( req: Request, res: Response ) => {
             taskId : Types.ObjectId
         }
     try {
-        const user = await getUserById( userId );
+        const user = await User.findById(userId)
         if ( !user ) {
             return responseHandler.notFound( res, "User not Found by ID" );
         }
@@ -199,7 +197,6 @@ export const removeUserFromTask = async( req: Request, res: Response ) => {
         if ( !newTaskAfterRemoveUser ) {
             return responseHandler.notFound( res, "Task After Remove User not Found" );
         }
-
         return responseHandler.ok( res, newTaskAfterRemoveUser, "Remove Uer success" );
 
     } catch ( error : any ) {
@@ -214,12 +211,11 @@ export const addUserToTask = async (req: Request, res: Response) => {
         taskId: Types.ObjectId;
     };
     try {
-        const user = await getUserById(userId);
+        const user = await User.findById(userId);
 
         if (!user) {
            return responseHandler.notFound(res, "User not Found");
         }
-
         const task = await Task.findOne({ _id: taskId, isDeleted: false })
         if(!task)
             return responseHandler.notFound(res,"Task notFound")
