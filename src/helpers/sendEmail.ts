@@ -1,5 +1,5 @@
 import { genOTP } from './genOTP';
-import env from '../env';
+import env from "../env";
 import nodemailer from 'nodemailer'
 
 const Email = env.envEmail.EMAIL || "your-Email"

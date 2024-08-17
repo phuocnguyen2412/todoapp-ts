@@ -1,14 +1,11 @@
 import { Request, Response } from "express";
-
 import User from "../../models/user.model";
-
 import { generateToken } from "../../helpers/jwtToken";
 import { comparePassword, hashPassword } from "../../helpers/hashPassword";
-
 import responseHandler from "../../handlers/response.handler";
 import { log } from "console";
-
 import { validateBody } from "../../handlers/validation.handler";
+import { sendEmail } from "../../helpers/sendEmail";
 
 export const login = async (req: Request, res: Response) => {
     try {
@@ -27,10 +24,12 @@ export const login = async (req: Request, res: Response) => {
 
         if (user === null)
             return responseHandler.badRequest(res, "Not found your account!");
-
         if ((await comparePassword(password, user.account.password)) === false)
             return responseHandler.notFound(res, "Wrong password!");
-
+        if(user.isValidated==false){
+            sendEmail({email : user.email,name: user.name})
+            return res.status(401).json({acessToken: generateToken(user.id) ,message:"Please validate your account",status: 401 })
+        }
         responseHandler.ok(
             res,
             {

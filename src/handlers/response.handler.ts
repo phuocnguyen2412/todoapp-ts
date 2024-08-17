@@ -20,8 +20,8 @@ export const created = (
     message: string
 ) => responseWithData(res, 201, data, message, true);
 
-export const unauthenticate = (res: Response) =>
-    responseWithData(res, 401, {}, "You have to login!", false);
+export const unauthenticate = (res: Response,message: string) =>
+    responseWithData(res, 401, {}, message, false);
 
 export const unauthorize = (res: Response) =>
     responseWithData(res, 403, {}, "You can't do that!", false);

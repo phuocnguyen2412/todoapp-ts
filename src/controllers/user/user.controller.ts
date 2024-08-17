@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import User from "../../models/user.model"
 import responseHandler from "../../handlers/response.handler";
 import {Request,Response} from "express"
+import { sendEmail } from "../../helpers/sendEmail";
 
 
 
@@ -30,7 +31,7 @@ export const  confirmOtp = async (req: Request,res: Response)=>{
             return responseHandler.ok(res,{},"Otp is confirmed and account validated ")
         }
         else{
-            return responseHandler.notFound(res,"Invalid Otp")
+            return responseHandler.unauthenticate(res,"Invalid Otp")
         }
     } catch (error:any) {
 
@@ -38,3 +39,4 @@ export const  confirmOtp = async (req: Request,res: Response)=>{
     }
 
 }
+
