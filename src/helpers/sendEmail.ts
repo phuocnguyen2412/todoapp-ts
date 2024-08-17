@@ -1,3 +1,4 @@
+import { genOTP } from './genOTP';
 import env from '../env';
 import nodemailer from 'nodemailer'
 
@@ -21,6 +22,7 @@ const transportation : {
 export const sendEmail = async ( userData : { email : string, name : string } ) => {
     try {
         const transporter = nodemailer.createTransport( transportation );
+        const randomOTP = genOTP();
         
         const mailOption : {
             from : string,
@@ -30,7 +32,7 @@ export const sendEmail = async ( userData : { email : string, name : string } ) 
         } = {
             from : Email,
             to : userData.email,
-            subject : `<b> OTP for validate your account </b>`,
+            subject : `OTP to validate your account`,
             html : 
             `
                 <html>
@@ -39,7 +41,7 @@ export const sendEmail = async ( userData : { email : string, name : string } ) 
                 </head>
                 <body>
                     <h1>Hello, <b> ${ userData.name } </b>!</h1>
-                    <p>This is a test email sent from Node.js using Nodemailer and EJS.</p>
+                    <p> Here is your OTP : ${ randomOTP } </p>
                 </body>
                 </html>
             `
