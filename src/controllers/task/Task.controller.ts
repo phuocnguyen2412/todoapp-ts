@@ -217,38 +217,44 @@ export const removeUserFromTask = async( req: Request, res: Response ) => {
     try {
         const user = await getUserById( userId );
         if ( !user ) {
-            return responseHandler.notFound( res, "User not Found" );
+            return responseHandler.notFound( res, "User not Found by ID" );
         }
 
-        const task = await Task.findOne( { _id : taskId, isDeleted : false } );
-        if ( !task ) {
+        const isExistTask = await Task.findOne( { _id : taskId, isDeleted : false } );
+        if ( !isExistTask ) {
             return responseHandler.notFound( res, "Task not Found" );
         }
-        if ( task.status == "done" ) {
+        if ( isExistTask.status == "done" ) {
             return responseHandler.notFound( res, "Task has done already" );
         }
-        if ( task.isDeleted == true ) {
-            return responseHandler.notFound( res, "Task deleted" );
-        } 
 
-        const isExistUser = task.users.some( ( element ) => {
-            if ( element.toString() === userId.toString() ) {
+        const isExistUserInTask = isExistTask.users.some( ( _userId ) => {
+            if ( _userId.toString() === userId.toString() ) {
                 return true;
             }
         })
-        if ( !isExistUser ) {
-            return responseHandler.notFound( res, "user not found in task")
+        if ( !isExistUserInTask ) {
+            return responseHandler.notFound( res, "User not Found in Task")
         }
-        const index = task.users.findIndex( ( element ) => {
-            if ( element.toString() === userId.toString() ) {
+
+        isExistTask.users = new Types.DocumentArray( isExistTask.users.filter( ( _userId ) => {
+            if ( _userId.toString() !== userId.toString() ) {
                 return true;
+            } else {
+                return false;
             }
-        } )
-        task.users.splice( index, 1 );
-        await task.save();
+        } ) );
 
+        const newTaskAfterRemoveUser = await Task.findOneAndUpdate(
+            { _id : taskId, isDeleted : false },
+            {  users : isExistTask.users },
+            { new : true }
+        )
+        if ( !newTaskAfterRemoveUser ) {
+            return responseHandler.notFound( res, "Task After Remove User not Found" );
+        }
 
-        return responseHandler.ok( res, task, "Remove user success" );
+        return responseHandler.ok( res, newTaskAfterRemoveUser, "Remove Uer success" );
 
     } catch ( error : any ) {
         return responseHandler.error( res, error );
