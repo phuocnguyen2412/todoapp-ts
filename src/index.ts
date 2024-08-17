@@ -5,13 +5,13 @@ import connectDb from "./configs/database.config";
 import { createServer, Server } from "http";
 import corsOptions from "./configs/cors.config";
 import cors from "cors";
-import envServer from "./env";
+import env from "./env";
 
 
 
 const app: Express = express();
 
-const PORT: string | number = envServer.PORT || 3000;
+const PORT: string | number = env.envServer.PORT || 3000;
 
 // Connect to the database
 connectDb();

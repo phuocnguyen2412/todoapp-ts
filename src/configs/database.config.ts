@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import envServer from "../env";
+import env from "../env";
 
 dotenv.config();
-const stringUrl: string = envServer.MONGODB_URL || "";
+const stringUrl: string = env.envServer.MONGODB_URL || "";
 console.log(stringUrl);
 
 const connectDb = async (): Promise<void> => {

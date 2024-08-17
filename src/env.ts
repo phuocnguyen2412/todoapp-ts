@@ -5,4 +5,11 @@ const envServer = {
     PORT: process.env.PORT,
     JWT_SECRET: process.env.JWT_SECRET,
 };
-export default envServer;
+const envEmail = {
+    EMAIL: process.env.EMAIL_USER,
+    PASSWORD: process.env.EMAIL_PASSWORD,
+}
+export default {
+    envServer,
+    envEmail
+};
