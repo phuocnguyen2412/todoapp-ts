@@ -70,13 +70,13 @@ export const register = async (req: Request, res: Response) => {
             name,
             account: {
                 password: await hashPassword(password),
+                otp : otp.toString(),
+                otpExp : otpExpired
             },
             isValidated : false,
-            otp : otp.toString(),
-            otpExpired
         });
         await sendOtpEmail( userData );
-        
+
         responseHandler.created(
             res,
             {
