@@ -1,4 +1,4 @@
-import { transportation, getMailOption } from './../constants/sendOtpForm';
+import { transportation, getMailOption } from '../constants/sendOtpForm';
 import { genOTP } from './genOTP';
 import nodemailer from 'nodemailer'
 
