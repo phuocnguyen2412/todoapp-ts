@@ -58,19 +58,19 @@ export const editTask = async (req: Request, res: Response) => {
             return responseHandler.notFound(res, "Task Id not Found");
         } 
 
-        const oldTask = await Task.findOne({ _id : taskId, isDeleted : false })
-            if ( !oldTask ) {
+        const isExistOldTask = await Task.findOne({ _id : taskId, isDeleted : false })
+            if ( !isExistOldTask ) {
                 return responseHandler.notFound( res, "Task not Found" );
             }
-            if ( oldTask.status == "done" ) {
+            if ( isExistOldTask.status == "done" ) {
                 return responseHandler.notFound( res, "Task has Done already" );
             }
 
         const {
-            title = oldTask.title,
-            description = oldTask.description,
-            users = oldTask.users,
-            time = oldTask.time,
+            title = isExistOldTask.title,
+            description = isExistOldTask.description,
+            users = isExistOldTask.users,
+            time = isExistOldTask.time,
         } = req.body as {
             title?: string;
             description?: string;
@@ -86,15 +86,15 @@ export const editTask = async (req: Request, res: Response) => {
             time: time,
         });
 
-        const newTask = await Task.findOne({ _id: taskId, isDeleted : false });
-        if (!newTask) {
+        const updatedTask = await Task.findOne({ _id: taskId, isDeleted : false });
+        if (!updatedTask) {
             return responseHandler.notFound(res, "Task not Found");
         }
-        if ( newTask.status == "done" ) {
+        if ( updatedTask.status == "done" ) {
             return responseHandler.notFound( res, "Task has Done already" );
         }
 
-        return responseHandler.ok( res, newTask, "Edit Success" )
+        return responseHandler.ok( res, updatedTask, "Edit Success" )
 
 
     } catch ( error : any ) {
