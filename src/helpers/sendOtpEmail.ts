@@ -1,21 +1,18 @@
 import { transportation, getMailOption } from '../constants/sendOtpForm';
-import { genOTP } from './genOTP';
 import nodemailer from 'nodemailer'
 
 type userDataBase =  { 
     email : string, 
-    name : string 
+    name : string ,
+    otp : number
 } 
 
-export const sendEmail = async ( userData : userDataBase ) => {
+export const sendOtpEmail = async ( userData : userDataBase ) => {
     try {
         const transporter = nodemailer.createTransport( transportation );
-        const otp = genOTP();
 
         try {
-            const result = await transporter.sendMail( getMailOption( userData, otp ) );
-            console.log( result.response )
-            return result.response
+            await transporter.sendMail( getMailOption( userData ) );
 
         } catch ( error : any ) {
             console.log( error )

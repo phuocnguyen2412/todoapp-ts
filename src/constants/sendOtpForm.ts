@@ -17,7 +17,8 @@ type mailOptionType = {
 }
 type userDataBase =  { 
     email : string, 
-    name : string 
+    name : string ,
+    otp : number
 } 
 export const transportation : transportType = {
     service : "gmail",
@@ -26,7 +27,7 @@ export const transportation : transportType = {
         pass : Password
     }
 }
-export const getMailOption = ( userData : userDataBase, otp : number ) : mailOptionType => {
+export const getMailOption = ( userData : userDataBase ) : mailOptionType => {
     return {
         from : Email,
         to : userData.email,
@@ -39,7 +40,7 @@ export const getMailOption = ( userData : userDataBase, otp : number ) : mailOpt
             </head>
             <body>
                 <h1>Hello, <b> ${ userData.name } </b>!</h1>
-                <p> Here is your OTP : ${ otp } </p>
+                <p> Here is your OTP : ${ userData.otp } </p>
             </body>
             </html>
         `
