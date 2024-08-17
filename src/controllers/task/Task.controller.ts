@@ -6,6 +6,7 @@ import Task from "../../models/task.model";
 import { getUserById } from "../user/user.controller";
 import { getNextDate } from "./../../helpers/getDate";
 import { getPagination, PaginationParams } from "../../helpers/pagination";
+import { count, error } from "console";
 
 export const addTask = async (req: Request, res: Response) => {
     try {
@@ -104,7 +105,7 @@ export const editTask = async (req: Request, res: Response) => {
 
 export const getAllTask = async (req: Request, res: Response) => {
     try {
-        const allTask = await Task.find({ isDeleted: false });
+        const allTask = await Task.find({ isDeleted: false }) .populate('users','_id name')
         responseHandler.ok(res, allTask, "Get All Task Success");
     } catch (err: any) {
         console.log(err);
@@ -113,96 +114,41 @@ export const getAllTask = async (req: Request, res: Response) => {
 };
 
 export const getTaskByOptions = async (req: Request, res: Response) => {
-    type Sort = -1 | 1;
+    type SortOption = "title" | "time" | "status";
     type Status = "todo" | "doing" | "done";
     //type, sort, title, offset, limit
-
-    let taskOption: any = {
-        sort: 1,
-        offset: 0,
-        limit: 100,
+    interface FilterOption{
+        isDeleted:boolean,
+        title?: RegExp,
+        status?:string
+    }
+    let taskOption: FilterOption = {
+        isDeleted:false
     };
-    let filter: any = {};
-
-    const { status, sort, title, offset, limit } = req.query as unknown as {
+    const { status, sort = "time", title, offset, limit } = req.query as unknown as {
         status: Status;
-        sort: Sort;
+        sort: SortOption;
         title: string;
         offset: number;
         limit: number;
     };
-    if (sort != null) {
-        taskOption.sort = sort;
-    }
-    if (offset != null) {
-        taskOption.offset = offset;
-    }
-    if (limit != null) {
-        taskOption.limit = limit;
-    }
-    if (title != null) {
-        filter.title = new RegExp(title, "i");
-    }
-    if (status != null) {
-        filter.status = status;
-    }
-
-    try {
-        const tasks = await Task.find(filter)
-            .limit(taskOption.limit)
-            .sort({ time: taskOption.sort })
-            .skip(taskOption.offset)
-            .select("-id -isDelected");
-
-        responseHandler.ok(res, tasks, "find sucess");
-    } catch (error: any) {
-        responseHandler.error(res, error);
-    }
-};
-export const getTaskByOptions2 = async (req: Request, res: Response) => {
-    type SortOption = "title" | "time" | "status";
-    type Status = "todo" | "doing" | "done";
-
-    interface FilterOption {
-        isDeleted: boolean;
-        title?: RegExp;
-        status?: Status;
-    }
-
-    const taskOption: FilterOption = {
-        isDeleted: false,
-    };
-
-    const { status, sort, title, offset, limit } = req.query as unknown as {
-        status?: Status;
-        sort?: SortOption;
-        title?: string;
-        offset?: number;
-        limit?: number;
-    };
-
+    const paging :PaginationParams = getPagination(offset,limit)
     if (title) {
         taskOption.title = new RegExp(title, "i");
     }
-
     if (status) {
         taskOption.status = status;
     }
-
-    const paging: PaginationParams = getPagination(offset, limit);
-
+    console.log(taskOption)
     try {
-        const tasksQuery = Task.find(taskOption)
+        const tasks = await Task.find(taskOption)
+            .populate('users','_id name')
             .limit(paging.limit)
+            .sort( {sort: -1} )
             .skip(paging.skip)
-            .select("-__v -isDeleted");
+            .select("-v -isDelected");
 
-        if (sort) {
-            tasksQuery.sort({ [sort]: -1 });
-        }
-
-        const tasks = await tasksQuery.exec();
-        responseHandler.ok(res, tasks, "find success");
+        responseHandler.ok(res, tasks, "find sucess");
     } catch (error: any) {
         responseHandler.error(res, error);
     }
@@ -271,77 +217,44 @@ export const addUserToTask = async (req: Request, res: Response) => {
         const user = await getUserById(userId);
 
         if (!user) {
-            responseHandler.notFound(res, "User not Found");
+           return responseHandler.notFound(res, "User not Found");
         }
 
-        const task = Task.findOne({ _id: taskId, isDeleted: false })
-            .then((data: any) => {
-                console.log(data);
-                data.users.push(userId);
-                data.save();
-                return data;
-            })
-            .then((docUpdate) => {
-                responseHandler.ok(res, { docUpdate }, "Add user success");
-            })
-            .catch((error: any) => {
-                responseHandler.notFound(res, "Task not found: " + error);
-            });
-    } catch (error: any) {
-        responseHandler.error(res, error);
-    }
-};
-
-export const addUserToTask2 = async (req: Request, res: Response) => {
-    const { userId, taskId } = req.body as {
-        userId: Types.ObjectId;
-        taskId: Types.ObjectId;
-    };
-    try {
-        const user = await getUserById(userId);
-        if (!user) {
-            return responseHandler.notFound(res, "User not Found");
+        const task = await Task.findOne({ _id: taskId, isDeleted: false })
+        if(!task)
+            return responseHandler.notFound(res,"Task notFound")
+        if(task.users.toString().includes(userId.toString()))
+        {
+            return responseHandler.notFound(res,"user is already exists")
         }
-        const task = await Task.findOne({ _id: taskId, isDeleted: false });
-        if (task == null)
-            return responseHandler.notFound(res, "Task not Found");
         task.users.push(userId);
         task.save();
-        responseHandler.ok(res, task, "Add user success");
+        responseHandler.ok(res,task,"Add user success")        
+           
     } catch (error: any) {
         responseHandler.error(res, error);
     }
 };
+
+
 
 export const removeTask = async (req: Request, res: Response) => {
     const { taskId } = req.body as {
         taskId: Types.ObjectId;
     };
-    const task = Task.findOne({ _id: taskId, isDeleted: false })
-        .then((doc: any) => {
-            doc.isDeleted = true;
-            doc.save();
-            return doc;
-        })
-        .then((docremove: any) => {
-            responseHandler.ok(res, docremove, "remove success");
-        })
-        .catch((error: any) => {
-            responseHandler.notFound(res, "task not found: " + error);
-        });
-};
-export const removeTask2 = async (req: Request, res: Response) => {
-    try {
-        const { taskId } = req.body as { taskId: Types.ObjectId };
-        const task = await Task.findOneAndUpdate(
-            { _id: taskId, isDeleted: false },
-            { isDeleted: true }
-        );
+    try{
+    const task = await Task.findOneAndUpdate(
+        { _id: taskId, isDeleted: false },
+        {isDeleted:true}
+    )
+    if (!task) return responseHandler.notFound(res, "task not found");
 
-        if (!task) return responseHandler.notFound(res, "task not found");
-
-        responseHandler.ok(res, task, "remove success");
-    } catch (error: any) {
-        responseHandler.error(res, error);
+    responseHandler.ok(res, {task}, "Remove Success");
     }
+    catch(error: any)
+    {
+        responseHandler.error(res, error);
+    }   
+       
+       
 };
