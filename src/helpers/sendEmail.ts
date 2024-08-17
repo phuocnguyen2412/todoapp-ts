@@ -1,54 +1,19 @@
+import { transportation, getMailOption } from './../constants/sendOtpForm';
 import { genOTP } from './genOTP';
-import env from '../env';
 import nodemailer from 'nodemailer'
 
-const Email = env.envEmail.EMAIL || "your-Email"
-const Password = env.envEmail.PASSWORD || "your-Password"
+type userDataBase =  { 
+    email : string, 
+    name : string 
+} 
 
-const transportation : {
-    service : string,
-    auth : {
-        user : string,
-        pass : string
-    }
-} = {
-    service : "gmail",
-    auth : {
-        user : Email,
-        pass : Password
-    }
-}
-
-export const sendEmail = async ( userData : { email : string, name : string } ) => {
+export const sendEmail = async ( userData : userDataBase ) => {
     try {
         const transporter = nodemailer.createTransport( transportation );
-        const randomOTP = genOTP();
-        
-        const mailOption : {
-            from : string,
-            to : string,
-            subject : string,
-            html : string
-        } = {
-            from : Email,
-            to : userData.email,
-            subject : `OTP to validate your account`,
-            html : 
-            `
-                <html>
-                <head>
-                    <title>Email Template</title>
-                </head>
-                <body>
-                    <h1>Hello, <b> ${ userData.name } </b>!</h1>
-                    <p> Here is your OTP : ${ randomOTP } </p>
-                </body>
-                </html>
-            `
-        }
+        const otp = genOTP();
 
         try {
-            const result = await transporter.sendMail( mailOption );
+            const result = await transporter.sendMail( getMailOption( userData, otp ) );
             console.log( result.response )
             return result.response
 
