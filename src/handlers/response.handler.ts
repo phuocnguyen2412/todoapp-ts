@@ -34,7 +34,8 @@ export const badRequest = (res: Response, message: string) =>
 
 export const error = (res: Response, error: Error) =>
     responseWithData(res, 500, error, "Error in server!", false);
-
+export const badRequestWithData = (res: Response, message: string,data:Object| Array<object>) =>
+    responseWithData(res, 400, data, message, false);
 const responseHandler = {
     ok,
     created,
@@ -42,6 +43,7 @@ const responseHandler = {
     unauthorize,
     notFound,
     badRequest,
+    badRequestWithData,
     error,
 };
 export default responseHandler;

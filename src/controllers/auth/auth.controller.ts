@@ -8,7 +8,8 @@ import { error, log } from "console";
 import { validateBody } from "../../handlers/validation.handler";
 import { genOTP, genOTPExpired } from "../../helpers/genOTP";
 import { sendOtpEmail } from "../../helpers/sendOtpEmail";
-
+import { access } from 'fs';
+import { Types } from 'mongoose';
 export const login = async (req: Request, res: Response) => {
     try {
         const validateResult: string = validateBody(req);
@@ -35,7 +36,7 @@ export const login = async (req: Request, res: Response) => {
             user.account.otpExp = otpExp
             await user.save()
             sendOtpEmail({email : user.email,name: user.name,otp })
-            return res.status(401).json({acessToken: generateToken(user.id),_id:user.id ,message:"Please validate your account",status: 401 })
+            return responseHandler.badRequestWithData(res,"Please validate your account",{acessToken: generateToken(user.id),_id:user.id })
         }
         responseHandler.ok(
             res,
@@ -94,3 +95,38 @@ export const register = async (req: Request, res: Response) => {
         responseHandler.error(res, error);
     }
 };
+
+export const  confirmOtp = async (req: Request,res: Response)=>{
+    const {userId,otpConfirm} = req.body as unknown as{
+        userId: Types.ObjectId;
+        otpConfirm: String;
+    }
+
+    try {
+        const user = await User.findById(userId)
+        if(!user)
+        {
+            return responseHandler.notFound(res,"User not found")
+        }
+        if(!user.account.otp)
+        {
+            return responseHandler.notFound(res,"fail to confirm otp")
+        }
+        if(user.account.otp==otpConfirm)
+        {
+            await User.findByIdAndUpdate(userId,{$set: { 'account.otp': null,"account.otpExp": null}})
+            user.isValidated = true
+            await user.save()
+            return responseHandler.ok(res,{},"Otp is confirmed and account validated ")
+        }
+        else{
+            return responseHandler.unauthenticate(res,"Invalid Otp")
+        }
+    } catch (error:any) {
+
+        return responseHandler.error(res,error)
+    }
+
+}
+
+
