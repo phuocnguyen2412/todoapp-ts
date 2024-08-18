@@ -9,7 +9,8 @@ export type mailOptionType = {
     from : string,
     to : string,
     subject : string,
-    html : string
+    html : string,
+    attachments: any
 }
 export type userDataBase =  { 
     email : string, 

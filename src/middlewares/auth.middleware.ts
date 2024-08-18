@@ -12,7 +12,7 @@ export const authenticate = async (
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-        return responseHandler.unauthenticate(res);
+        return responseHandler.unauthenticate(res,"auth Header fail");
     }
 
     const token = authHeader.startsWith("Bearer ")
