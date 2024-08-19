@@ -53,8 +53,8 @@ export const editTask = async (req: Request, res: Response) => {
         if (!Types.ObjectId.isValid(taskId)) {
             return responseHandler.notFound(res, "Invalid Id");
         }
-        const isExistTask = await Task.findById(taskId);
-        if (!isExistTask) {
+        const isExistTaskId = await Task.findById(taskId);
+        if (!isExistTaskId) {
             return responseHandler.notFound(res, "Task Id not Found");
         }
 
@@ -67,7 +67,7 @@ export const editTask = async (req: Request, res: Response) => {
         }
 
         const {
-            status = isExistTask.status,
+            status = isExistOldTask.status,
             title = isExistOldTask.title,
             description = isExistOldTask.description,
             users = isExistOldTask.users,
@@ -156,16 +156,19 @@ export const getTaskByOptions = async (req: Request, res: Response) => {
 };
 
 export const removeUserFromTask = async (req: Request, res: Response) => {
-    const { userId, taskId } = req.body as {
+    const { userId } = req.body as {
         userId: Types.ObjectId;
-        taskId: Types.ObjectId;
     };
     try {
-        const user = await User.findById(userId);
-        if (!user) {
-            return responseHandler.notFound(res, "User not Found by ID");
+        const taskId = req.params.id;
+        if (!Types.ObjectId.isValid(taskId)) {
+            return responseHandler.notFound(res, "Invalid Task Id");
         }
-
+        const isExistTaskId = await Task.findById(taskId);
+        if (!isExistTaskId) {
+            return responseHandler.notFound(res, "Task Id not Found");
+        }
+        
         const isExistTask = await Task.findOne({
             _id: taskId,
             isDeleted: false,

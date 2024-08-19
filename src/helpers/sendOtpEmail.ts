@@ -1,11 +1,6 @@
+import { userDataBase } from './../constants/constantType';
 import { transportation, getMailOption } from '../constants/sendOtpForm';
 import nodemailer from 'nodemailer'
-
-type userDataBase =  { 
-    email : string, 
-    name : string ,
-    otp : string
-} 
 
 export const sendOtpEmail = async ( userData : userDataBase ) => {
     try {

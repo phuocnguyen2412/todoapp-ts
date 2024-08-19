@@ -17,7 +17,7 @@ import {
 
 const taskRoute: Router = Router();
 taskRoute.delete("/removeTask", removeTask);
-taskRoute.delete("/removeUserFromTask", validateUserIdAndTaskId , removeUserFromTask );
+taskRoute.delete("/remove-user-from-task/:id", validateUserIdAndTaskId , removeUserFromTask );
 taskRoute.post("/add-user-to-task", addUserToTask);
 taskRoute.post("/add-task", validateTask, handleValidateTask, addTask);
 taskRoute.put("/edit-task/:id", validateEditTask, handleValidateTask, editTask);
