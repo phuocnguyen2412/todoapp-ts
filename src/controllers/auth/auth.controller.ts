@@ -1,4 +1,4 @@
-import { userDataBase } from './../../constants/constantType';
+import { userDataBase } from "./../../constants/constantType";
 import { Request, Response } from "express";
 import User from "../../models/user.model";
 import { generateToken } from "../../helpers/jwtToken";
@@ -8,14 +8,14 @@ import { error, log } from "console";
 import { validateBody } from "../../handlers/validation.handler";
 import { genOTP, genOTPExpired } from "../../helpers/genOTP";
 import { sendOtpEmail } from "../../helpers/sendOtpEmail";
-import { access } from 'fs';
-import { Types } from 'mongoose';
+import { access } from "fs";
+import { Types } from "mongoose";
 export const login = async (req: Request, res: Response) => {
     try {
         const validateResult: string = validateBody(req);
         if (validateResult.length > 0)
             return responseHandler.badRequest(res, validateResult);
-        
+
         const { email, password } = req.body as {
             email: string;
             password: string;
@@ -29,14 +29,18 @@ export const login = async (req: Request, res: Response) => {
             return responseHandler.badRequest(res, "Not found your account!");
         if ((await comparePassword(password, user.account.password)) === false)
             return responseHandler.notFound(res, "Wrong password!");
-        if(user.isValidated==false){
-            const otp = genOTP().toString()
-            const otpExp = genOTPExpired()
-            user.account.otp = otp
-            user.account.otpExp = otpExp
-            await user.save()
-            sendOtpEmail({email : user.email,name: user.name,otp })
-            return responseHandler.badRequestWithData(res,"Please validate your account",{acessToken: generateToken(user.id),_id:user.id })
+        if (user.isValidated == false) {
+            const otp = genOTP().toString();
+            const otpExp = genOTPExpired();
+            user.account.otp = otp;
+            user.account.otpExp = otpExp;
+            await user.save();
+            sendOtpEmail({ email: user.email, name: user.name, otp });
+            return responseHandler.badRequestWithData(
+                res,
+                "Please validate your account",
+                { acessToken: generateToken(user.id), _id: user.id }
+            );
         }
         responseHandler.ok(
             res,
@@ -58,23 +62,25 @@ export const register = async (req: Request, res: Response) => {
             password: string;
             name: string;
         };
-
+        const checkDuplicate = User.findOne({ email });
+        if (checkDuplicate != null)
+            return responseHandler.badRequest(res, "Đã tồn tại tài khoản");
         const otp = genOTP();
         const otpExpired = genOTPExpired();
-        const userData : userDataBase = {
+        const userData: userDataBase = {
             email,
             name,
-            otp : otp.toString()
-        }
+            otp: otp.toString(),
+        };
         const user = await User.create({
             email,
             name,
             account: {
                 password: await hashPassword(password),
-                otp : otp.toString(),
-                otpExp : otpExpired
+                otp: otp.toString(),
+                otpExp: otpExpired,
             },
-            isValidated : false,
+            isValidated: false,
         });
 
         responseHandler.created(
@@ -86,47 +92,44 @@ export const register = async (req: Request, res: Response) => {
         );
 
         try {
-            await sendOtpEmail( userData );
-        } catch ( error : any ) {
-            responseHandler.error( res, error );
+            await sendOtpEmail(userData);
+        } catch (error: any) {
+            responseHandler.error(res, error);
         }
-        
     } catch (error: any) {
         responseHandler.error(res, error);
     }
 };
 
-export const  confirmOtp = async (req: Request,res: Response)=>{
-    const {userId,otpConfirm} = req.body as unknown as{
+export const confirmOtp = async (req: Request, res: Response) => {
+    const { userId, otpConfirm } = req.body as unknown as {
         userId: Types.ObjectId;
         otpConfirm: String;
-    }
+    };
 
     try {
-        const user = await User.findById(userId)
-        if(!user)
-        {
-            return responseHandler.notFound(res,"User not found")
+        const user = await User.findById(userId);
+        if (!user) {
+            return responseHandler.notFound(res, "User not found");
         }
-        if(!user.account.otp)
-        {
-            return responseHandler.notFound(res,"fail to confirm otp")
+        if (!user.account.otp) {
+            return responseHandler.notFound(res, "fail to confirm otp");
         }
-        if(user.account.otp==otpConfirm)
-        {
-            await User.findByIdAndUpdate(userId,{$set: { 'account.otp': null,"account.otpExp": null}})
-            user.isValidated = true
-            await user.save()
-            return responseHandler.ok(res,{},"Otp is confirmed and account validated ")
+        if (user.account.otp == otpConfirm) {
+            await User.findByIdAndUpdate(userId, {
+                $set: { "account.otp": null, "account.otpExp": null },
+            });
+            user.isValidated = true;
+            await user.save();
+            return responseHandler.ok(
+                res,
+                {},
+                "Otp is confirmed and account validated "
+            );
+        } else {
+            return responseHandler.unauthenticate(res, "Invalid Otp");
         }
-        else{
-            return responseHandler.unauthenticate(res,"Invalid Otp")
-        }
-    } catch (error:any) {
-
-        return responseHandler.error(res,error)
+    } catch (error: any) {
+        return responseHandler.error(res, error);
     }
-
-}
-
-
+};
