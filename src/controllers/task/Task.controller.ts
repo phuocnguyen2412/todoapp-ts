@@ -118,7 +118,7 @@ export const getTaskByOptions = async (req: Request, res: Response) => {
     interface FilterOption {
         isDeleted: boolean;
         title?: RegExp;
-        status?: string;
+        status?: Status;
     }
     let taskOption: FilterOption = {
         isDeleted: false,
