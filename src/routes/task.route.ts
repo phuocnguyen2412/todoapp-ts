@@ -16,7 +16,7 @@ import {
 } from "../controllers/task/Task.controller";
 
 const taskRoute: Router = Router();
-taskRoute.delete("/removeTask", removeTask);
+taskRoute.delete("/remove-task", removeTask);
 taskRoute.delete("/remove-user-from-task/:id", validateUserIdAndTaskId , removeUserFromTask );
 taskRoute.post("/add-user-to-task", addUserToTask);
 taskRoute.post("/add-task", validateTask, handleValidateTask, addTask);
