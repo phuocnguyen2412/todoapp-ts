@@ -14,3 +14,10 @@ export const validateRegister = [
         .withMessage("Mật khẩu phải có ít nhất 6 ký tự"),
     body("name").notEmpty().withMessage("Tên không được để trống"),
 ];
+
+export const validateConfirmOtp = [
+    body("userId").notEmpty().withMessage("Thiếu trường userId"),
+    body("otpConfirm")
+        .isLength({ min: 6, max: 6 })
+        .withMessage("otpConfirm không đúng định dạng"),
+];

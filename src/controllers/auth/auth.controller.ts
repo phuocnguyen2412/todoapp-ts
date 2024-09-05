@@ -4,25 +4,20 @@ import User from "../../models/user.model";
 import { generateToken } from "../../helpers/jwtToken";
 import { comparePassword, hashPassword } from "../../helpers/hashPassword";
 import responseHandler from "../../handlers/response.handler";
-import { error, log } from "console";
-import { validateBody } from "../../handlers/validation.handler";
+
 import { genOTP, genOTPExpired } from "../../helpers/genOTP";
 import { sendOtpEmail } from "../../helpers/sendOtpEmail";
-import { access } from "fs";
-import { Types } from "mongoose";
-export const login = async (req: Request, res: Response) => {
-    try {
-        const validateResult: string = validateBody(req);
-        if (validateResult.length > 0)
-            return responseHandler.badRequest(res, validateResult);
 
-        const { email, password } = req.body as {
-            email: string;
-            password: string;
-        };
+import { Types } from "mongoose";
+export const login = async (
+    req: Request<{}, {}, { email: string; password: string }>,
+    res: Response
+) => {
+    try {
+        const { email, password } = req.body;
 
         const user = await User.findOne({
-            email: email,
+            email,
         });
 
         if (user === null)
@@ -50,21 +45,29 @@ export const login = async (req: Request, res: Response) => {
             "Đăng nhập thành công"
         );
     } catch (error: any) {
-        log(error);
         responseHandler.error(res, error);
     }
 };
 
-export const register = async (req: Request, res: Response) => {
-    try {
-        const { email, password, name } = req.body as {
+export const register = async (
+    req: Request<
+        {},
+        {},
+        {
             email: string;
             password: string;
             name: string;
-        };
+        }
+    >,
+    res: Response
+) => {
+    try {
+        const { email, password, name } = req.body;
+
         const checkDuplicate = User.findOne({ email });
         if (checkDuplicate != null)
             return responseHandler.badRequest(res, "Đã tồn tại tài khoản");
+
         const otp = genOTP();
         const otpExpired = genOTPExpired();
         const userData: userDataBase = {
@@ -91,21 +94,24 @@ export const register = async (req: Request, res: Response) => {
             "Đăng ký thành công, hãy xác thực tài khoản"
         );
 
-        try {
-            await sendOtpEmail(userData);
-        } catch (error: any) {
-            responseHandler.error(res, error);
-        }
+        await sendOtpEmail(userData);
     } catch (error: any) {
         responseHandler.error(res, error);
     }
 };
 
-export const confirmOtp = async (req: Request, res: Response) => {
-    const { userId, otpConfirm } = req.body as unknown as {
-        userId: Types.ObjectId;
-        otpConfirm: String;
-    };
+export const confirmOtp = async (
+    req: Request<
+        {},
+        {},
+        {
+            userId: Types.ObjectId;
+            otpConfirm: String;
+        }
+    >,
+    res: Response
+) => {
+    const { userId, otpConfirm } = req.body;
 
     try {
         const user = await User.findById(userId);
@@ -115,21 +121,17 @@ export const confirmOtp = async (req: Request, res: Response) => {
         if (!user.account.otp) {
             return responseHandler.notFound(res, "fail to confirm otp");
         }
-        if (user.account.otp == otpConfirm) {
-            await User.findByIdAndUpdate(userId, {
-                $set: { "account.otp": null, "account.otpExp": null },
-            });
-            user.isValidated = true;
-            await user.save();
-            return responseHandler.ok(
-                res,
-                {},
-                "Otp is confirmed and account validated "
-            );
-        } else {
+        if (user.account.otp !== otpConfirm)
             return responseHandler.unauthenticate(res, "Invalid Otp");
-        }
+
+        await User.findByIdAndUpdate(userId, {
+            $set: { "account.otp": null, "account.otpExp": null },
+        });
+        user.isValidated = true;
+        await user.save();
+
+        responseHandler.ok(res, {}, "Otp is confirmed and account validated ");
     } catch (error: any) {
-        return responseHandler.error(res, error);
+        responseHandler.error(res, error);
     }
 };
